@@ -1,25 +1,89 @@
 package com.geminnu.hexagon;
 
+import com.geminnu.hexagon.BioSensorManagerService.LocalBinder;
+
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 
 public class MainActivity extends Activity {
 
 	private BioSensor mSensor;
+	BioSensorManagerService mSensorManager;
+	boolean mBound = false;
+	Button mButton;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        mButton = (Button) findViewById(R.id.button1);
+        
+//      The only reason why this button exists is because the Binder call (to the service) is asynchronous so there is
+//      not enough time for the callback to respond during the Activity's lifecycle.
+//      TODO: Find a better way for the above problem...maybe a lock that holds the execution of Activity's 
+//      lifecycle and notify the procedure to go on only when onConnected is completed   
+        
+        mButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				mSensorManager.registerListener(mySensorListener, mSensor, 5000);	
+			}
+		});
+        
+        
+        Intent intent1 = new Intent(this, BioSensorManagerService.class);
+        bindService(intent1, mConnection, Context.BIND_AUTO_CREATE);
+        
         mSensor = new BioSensor("ECG", 1, 1);
         
-        Log.d("Alex", mSensor.getName());
+//        Log.d("Alex", mSensor.getName());
     }
+    
+    private ServiceConnection mConnection  = new ServiceConnection() {
+		
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			Log.d("Service Connection", "Service is disconnected");
+			mBound = false;
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			
+			LocalBinder binder = (LocalBinder) service;
+			mSensorManager = binder.getServerInstance();
+			mBound = true;
+			Log.d("Service Connection", "Service is connected");
+		}
+		
+	};
 
+    private BioSensorEventListener mySensorListener = new BioSensorEventListener() {
+		
+		@Override
+		public void onBioSensorChange(BioSensorEvent event) {
+			float value = event.getValue();
+			long time = event.getTimestamp();
+			BioSensor sen = event.getSensor();
+			Log.d("Listener", "value: " + value + ", sensor: " + sen.getName() + ", time: " + time);
+			
+		}
+	};
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

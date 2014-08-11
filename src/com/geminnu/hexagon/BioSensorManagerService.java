@@ -39,14 +39,31 @@ public class BioSensorManagerService extends Service {
 	
 //	===========================================================================	//
 //	Methods that provide the functionality of the service						//
-//	===========================================================================	//	
+//	===========================================================================	//
+	
+	private BioSensorEventListener mListener;
+	private BioSensor mSensor;
+	private int sampleRate;
 	
 	public void registerListener(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
+		this.mListener = listener;
+		this.mSensor = sensor;
+		this.sampleRate = sampleRate;
+		tester(mListener, mSensor, this.sampleRate );
 		
 	}
 	
 	public void unegisterListener(BioSensorEventListener listener) {
 		listener = null;
+	}
+	
+	public void tester(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
+		long m = sampleRate;
+		float d = (float) 2.34;
+		for(int i = 0; i < 20; i++) {
+			BioSensorEvent event = new BioSensorEvent(sensor, m , d+i);
+			listener.onBioSensorChange(event);
+		}
 	}
 	
 	public List<BioSensor> getBioSensorsList() {

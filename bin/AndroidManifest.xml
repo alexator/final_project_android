@@ -26,6 +26,9 @@
         <service
             android:name=".WirelessManagerService"
             android:exported="false"/>
+        <service
+            android:name=".BioSensorManagerService"
+            android:exported="false"/>
     </application>
 
 </manifest>
