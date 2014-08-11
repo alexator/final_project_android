@@ -19,7 +19,9 @@ import android.widget.Button;
 
 public class MainActivity extends Activity {
 
-	private BioSensor mSensor;
+	private BioSensor mSensor1;
+	private BioSensor mSensor2;
+	private BioSensor mSensor3;
 	BioSensorManagerService mSensorManager;
 	boolean mBound = false;
 	Button mButton;
@@ -40,7 +42,9 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				mSensorManager.registerListener(mySensorListener, mSensor, 5000);	
+				mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
+				mSensorManager.registerListener(mySensorListener, mSensor2, 6000);
+				mSensorManager.registerListener(mySensorListener, mSensor3, 7000);
 			}
 		});
         
@@ -48,7 +52,9 @@ public class MainActivity extends Activity {
         Intent intent1 = new Intent(this, BioSensorManagerService.class);
         bindService(intent1, mConnection, Context.BIND_AUTO_CREATE);
         
-        mSensor = new BioSensor("ECG", 1, 1);
+        mSensor1 = new BioSensor("ECG", 1, 1);
+        mSensor2 = new BioSensor("EMG", 1, 1);
+        mSensor3 = new BioSensor("TMP", 1, 1);
         
 //        Log.d("Alex", mSensor.getName());
     }

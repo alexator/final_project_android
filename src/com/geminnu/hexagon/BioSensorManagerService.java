@@ -1,5 +1,6 @@
 package com.geminnu.hexagon;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Service;
@@ -44,12 +45,15 @@ public class BioSensorManagerService extends Service {
 	private BioSensorEventListener mListener;
 	private BioSensor mSensor;
 	private int sampleRate;
+	ArrayList<BioSensorListenerItem> mListeners = new ArrayList<BioSensorListenerItem>();
 	
 	public void registerListener(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
 		this.mListener = listener;
 		this.mSensor = sensor;
 		this.sampleRate = sampleRate;
-		tester(mListener, mSensor, this.sampleRate );
+		
+		mListeners.add(new BioSensorListenerItem(mListener, mSensor, sampleRate));
+		tester();
 		
 	}
 	
@@ -57,12 +61,17 @@ public class BioSensorManagerService extends Service {
 		listener = null;
 	}
 	
-	public void tester(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
-		long m = sampleRate;
+	public void tester() {
+//		long m = sampleRate;
 		float d = (float) 2.34;
-		for(int i = 0; i < 20; i++) {
-			BioSensorEvent event = new BioSensorEvent(sensor, m , d+i);
-			listener.onBioSensorChange(event);
+		if(!mListeners.isEmpty()) {
+			for(int i = 0; i < mListeners.size(); i++) {
+				for(int j = 0; j < 10; j++) {
+					
+					BioSensorEvent event = new BioSensorEvent(mListeners.get(i).getSensor(), mListeners.get(i).getSampleRate(), d+i);
+					mListeners.get(i).getListener().onBioSensorChange(event);
+				}
+			}
 		}
 	}
 	
