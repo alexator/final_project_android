@@ -7,6 +7,8 @@
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="18" />
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:allowBackup="true"
@@ -29,6 +31,12 @@
         <service
             android:name=".BioSensorManagerService"
             android:exported="false"/>
+        
+        <receiver android:name="com.geminnu.hexagon.MyReceiver" >
+    		<intent-filter>
+        		<action android:name="com.geminnu.hexagon.SEND_DATA" />
+    		</intent-filter>
+		</receiver>
     </application>
 
 </manifest>

@@ -43,8 +43,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
-				mSensorManager.registerListener(mySensorListener, mSensor2, 6000);
-				mSensorManager.registerListener(mySensorListener, mSensor3, 7000);
+//				mSensorManager.registerListener(mySensorListener, mSensor2, 6000);
+//				mSensorManager.registerListener(mySensorListener, mSensor3, 7000);
 			}
 		});
         
