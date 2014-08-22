@@ -15,26 +15,27 @@ public class ConnectedThread extends Thread{
 	
 	private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
-    private final OutputStream mmOutStream;
+//    private final OutputStream mmOutStream;
     private MessageListener mMsgListener;
     private String TAG = "Connected Thread";
 
-    public ConnectedThread(BluetoothSocket socket) {
+    public ConnectedThread(BluetoothSocket socket, MessageListener listener) {
         Log.d(TAG, "create ConnectedThread");
-        mmSocket = socket;
+        this.mmSocket = socket;
+        this.mMsgListener = listener;
         InputStream tmpIn = null;
-        OutputStream tmpOut = null;
+//        OutputStream tmpOut = null;
 
         // Get the BluetoothSocket input and output streams
         try {
             tmpIn = socket.getInputStream();
-            tmpOut = socket.getOutputStream();
+//            tmpOut = socket.getOutputStream();
         } catch (IOException e) {
             Log.e(TAG, "temp sockets not created", e);
         }
 
         mmInStream = tmpIn;
-        mmOutStream = tmpOut;
+//        mmOutStream = tmpOut;
     }
 
     public void run() {
@@ -44,7 +45,7 @@ public class ConnectedThread extends Thread{
         int bytes;
 
         // Keep listening to the InputStream while connected
-        while (true) {
+        while (true && !Thread.interrupted()) {
             try {
                 // Read from the InputStream
 //                bytes = mmInStream.read(buffer);
@@ -54,8 +55,9 @@ public class ConnectedThread extends Thread{
 //                mHandler.obtainMessage(data).sendToTarget();
             	
             	if(data != null) {
-//            	     mMsgListener.onDataReceived(data);
+            	    mMsgListener.onDataReceived("Hi Alex");
             		Log.d("yeah thread", data);
+            		data = null;
             	}
                 
                 //Log.d(TAG, data);
@@ -71,23 +73,6 @@ public class ConnectedThread extends Thread{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    }
-    
-    /**
-     * Write to the connected OutStream.
-     * @param buffer  The bytes to write
-     */
-    public void write(byte[] buffer) {
-        try {
-            mmOutStream.write(buffer);
-
-            // Share the sent message back to the UI Activity
-//            mHandler.obtainMessage(BluetoothChat.MESSAGE_WRITE, -1, -1, buffer)
-//                    .sendToTarget();
-            Log.d(TAG, "String was sent");
-        } catch (IOException e) {
-            Log.e(TAG, "Exception during write", e);
-        }
     }
 
 }

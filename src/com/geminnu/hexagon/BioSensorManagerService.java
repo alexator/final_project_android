@@ -7,6 +7,8 @@ import java.util.List;
 
 
 
+import java.util.Timer;
+
 import android.app.Service;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -15,7 +17,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-public class BioSensorManagerService extends Service implements MessageListener {
+public class BioSensorManagerService extends Service {
 
 //	===========================================================================	//
 //	Essential parts for the service in order to be able to bind with components	//
@@ -51,9 +53,10 @@ public class BioSensorManagerService extends Service implements MessageListener 
 	private BioSensorEventListener mListener;
 	private BioSensor mSensor;
 	private int sampleRate;
-	private Bluetooth bt;
-	private BluetoothSocket socket;
+	private Bluetooth bt = new Bluetooth("00:07:80:6D:4C:F2");;
+	private BluetoothSocket socket = bt.connection();
 	private Handler mHandler;
+//	private Arduino ard;
 	String message = "Hello Alex";
 	byte[] msgBuffer = message.getBytes();
 	
@@ -66,9 +69,14 @@ public class BioSensorManagerService extends Service implements MessageListener 
 		this.mListener = listener;
 		this.mSensor = sensor;
 		this.sampleRate = sampleRate;
-		bt = new Bluetooth("00:07:80:6D:4C:F2");
-		socket = bt.connection();
-		exchange(socket);
+//		bt = new Bluetooth("00:07:80:6D:4C:F2");
+//		socket = bt.connection();
+		Timer timer = new Timer();
+		ct = new ConnectedThread(socket, myMessage);
+		ct.start();
+//		ard = new Arduino("test", socket, myMessage);
+		timer.scheduleAtFixedRate(new Arduino("test", socket, myMessage), 0, sampleRate);
+//		exchange(socket);
 		
 //		mListeners.add(new BioSensorListenerItem(mListener, mSensor, sampleRate));
 //		tester();
@@ -95,9 +103,10 @@ public class BioSensorManagerService extends Service implements MessageListener 
 	
 	//	TODO: Find a better way to implement the mechanism for the requests.
 	public void exchange(BluetoothSocket btsock) {
-		ct = new ConnectedThread(btsock);
-		ct.start();
-		ct.write(msgBuffer);
+//		ct = new ConnectedThread(btsock);
+//		ct.start();
+//		ct.write(msgBuffer);
+//		new Timer().scheduleAtFixedRate(task, delay, period);
 //		mHandler = new Handler();
 //		Runnable mStatusChecker = new Runnable() {
 //		    @Override 
@@ -129,17 +138,36 @@ public class BioSensorManagerService extends Service implements MessageListener 
 		return list;
 	}
 
-	@Override
-	public void onDataReceived(String data) {
-		// TODO Auto-generated method stub
-		float d;
-		if(data == "Hello back Alex") {
-			d = (float) 1.0;
-		} else {
-			d = (float) 0.0;
-		}
+	private MessageListener myMessage = new MessageListener() {
 		
-		BioSensorEvent event = new BioSensorEvent(mSensor, sampleRate,d);
-		mListener.onBioSensorChange(event);
-	}
+		@Override
+		public void onDataReceived(String data) {
+			// TODO Auto-generated method stub
+			
+			float d;
+			if(data == "Hi Alex") {
+				d = (float) 1.0;
+			} else {
+				d = (float) 0.0;
+			}
+//			ct.interrupt();
+			
+			BioSensorEvent event = new BioSensorEvent(mSensor, sampleRate,d);
+			mListener.onBioSensorChange(event);
+			
+		}
+	};
+//	@Override
+//	public void onDataReceived(String data) {
+//		// TODO Auto-generated method stub
+//		float d;
+//		if(data == "Hi Alex") {
+//			d = (float) 1.0;
+//		} else {
+//			d = (float) 0.0;
+//		}
+//		
+//		BioSensorEvent event = new BioSensorEvent(mSensor, sampleRate,d);
+//		mListener.onBioSensorChange(event);
+//	}
 }
