@@ -2,12 +2,10 @@ package com.geminnu.hexagon;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.TimerTask;
-
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-public class ArduinoTransmitter extends TimerTask{
+public class ArduinoTransmitter extends Thread{
 
 	final String TAG = "ArduinoTransmitter";
 	private String mMessage;

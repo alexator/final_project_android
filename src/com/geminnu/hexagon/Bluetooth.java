@@ -24,7 +24,7 @@ public class Bluetooth {
 		
 	}
 	
-	public BluetoothSocket connection() {
+	public BluetoothSocket createBlueSocket() {
 			
 			mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 			arduino = mBluetoothAdapter.getRemoteDevice(arduinoMacAdrr);
@@ -48,7 +48,7 @@ public class Bluetooth {
 			}
 		}
 		
-		public void disconnect() {
+		public void closeBlueSocket() {
 			
 			try {
 				if(btSocket.isConnected()) {

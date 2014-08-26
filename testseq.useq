@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence-diagram version="1.1.6" icons="true">  
+  <object id="1" language="java" name="com.geminnu.hexagon.BioSensorManagerService" project="Hexagon" 
+    file="/Hexagon/src/com/geminnu/hexagon/BioSensorManagerService.java" binary="false" label="bioSensorManagerService" 
+    type="class" autoSize="true">    
+    <position height="-1" width="-1" x="370" y="0"/>    
+    <execution id="2">      
+      <position height="201" width="203" x="5" y="105"/>    
+    </execution>    
+    <execution id="4">      
+      <position height="138" width="203" x="5" y="147"/>    
+    </execution>    
+    <execution id="7">      
+      <position height="21" width="7" x="103" y="222"/>    
+    </execution>    
+    <execution id="8">      
+      <position height="63" width="203" x="5" y="339"/>    
+    </execution>    
+    <execution id="11">      
+      <position height="63" width="203" x="5" y="430"/>    
+    </execution>  
+  </object>  
+  <object id="14" language="java" name="com.geminnu.hexagon.ArduinoService" project="Hexagon" 
+    file="/Hexagon/src/com/geminnu/hexagon/ArduinoService.java" binary="false" label="arduinoService" type="class" 
+    autoSize="true">    
+    <position height="-1" width="-1" x="93" y="0"/>    
+    <execution id="6">      
+      <position height="96" width="128" x="212" y="168"/>    
+    </execution>    
+    <execution id="10">      
+      <position height="21" width="128" x="212" y="360"/>    
+    </execution>    
+    <execution id="13">      
+      <position height="21" width="128" x="212" y="451"/>    
+    </execution>    
+    <execution id="16">      
+      <position height="63" width="128" x="212" y="507"/>    
+    </execution>    
+    <execution id="19">      
+      <position height="63" width="128" x="212" y="621"/>    
+    </execution>    
+    <execution id="22">      
+      <position height="126" width="128" x="212" y="716"/>    
+    </execution>  
+  </object>  
+  <object id="25" language="java" name="com.geminnu.hexagon.ArduinoTransmitter" project="Hexagon" 
+    file="/Hexagon/src/com/geminnu/hexagon/ArduinoTransmitter.java" binary="false" label="arduinoTransmitter" 
+    type="class" autoSize="true">    
+    <position height="-1" width="-1" x="506" y="0"/>    
+    <execution id="18">      
+      <position height="21" width="156" x="344" y="528"/>    
+    </execution>    
+    <execution id="21">      
+      <position height="21" width="156" x="344" y="642"/>    
+    </execution>  
+  </object>  
+  <object id="26" language="java" name="com.geminnu.hexagon.ArduinoReceiver" project="Hexagon" 
+    file="/Hexagon/src/com/geminnu/hexagon/ArduinoReceiver.java" binary="false" label="arduinoReceiver" type="class" 
+    autoSize="true">    
+    <position height="-1" width="-1" x="676" y="0"/>    
+    <execution id="24">      
+      <position height="84" width="137" x="504" y="737"/>    
+    </execution>    
+    <execution id="28">      
+      <position height="21" width="7" x="569" y="779"/>    
+    </execution>  
+  </object>  
+  <message id="3" operation="onCreate():void">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="4"/>  
+  </message>  
+  <message id="5" operation="onBind(android.content.Intent):android.os.IBinder">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="6"/>  
+  </message>  
+  <message id="9" operation="getMessageSenderListener():com.geminnu.hexagon.MessageSender">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="10"/>  
+  </message>  
+  <message id="12" operation="sendActionListener(com.geminnu.hexagon.CoordinatorActionListener):void">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="13"/>  
+  </message>  
+  <message id="15">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="7"/>  
+  </message>  
+  <message id="17">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="18"/>  
+  </message>  
+  <message id="20" operation="write(byte[]):void">    
+    <end type="SOURCE" refId="19"/>    
+    <end type="TARGET" refId="21"/>  
+  </message>  
+  <message id="23" operation="ArduinoReceiver(android.bluetooth.BluetoothSocket,com.geminnu.hexagon.MessageListener)">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="24"/>  
+  </message>  
+  <message id="27" operation="run():void">    
+    <end type="SOURCE" refId="24"/>    
+    <end type="TARGET" refId="28"/>  
+  </message>
+</sequence-diagram>

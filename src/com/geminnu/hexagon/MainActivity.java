@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.TextView;
 
 
 public class MainActivity extends Activity {
@@ -21,18 +23,31 @@ public class MainActivity extends Activity {
 	private BioSensor mSensor2;
 	BioSensorManagerService mSensorManager;
 	boolean mBound = false;
-	
+	public TextView data1;
+	public TextView data2;
+	public TextView greeting;
+	public Button test;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        greeting = (TextView) findViewById(R.id.greeting);
+        data1 = (TextView) findViewById(R.id.messages1);
+        data2 = (TextView) findViewById(R.id.messages2);
+        test = (Button)	findViewById(R.id.tester);
         
-        Intent intent1 = new Intent(this, BioSensorManagerService.class);
-        bindService(intent1, mConnection, Context.BIND_AUTO_CREATE);
+        Intent arduino = new Intent(this, ArduinoService.class);
+        arduino.putExtra(ArduinoService.ADDRESS, "00:07:80:6D:4C:F2");
+        arduino.putExtra(ArduinoService.COMMUNICATION_TYPE, ArduinoService.BLUETOOTH);
+        arduino.putExtra(ArduinoService.DATA_CONTAINER, ArduinoService.XML);
+        startService(arduino);
         
-        mSensor1 = new BioSensor("ECG1", 1, 1);
-        mSensor2 = new BioSensor("ECG2", 1, 1);
+        Intent sensorService = new Intent(this, BioSensorManagerService.class);
+        bindService(sensorService, mConnection, Context.BIND_AUTO_CREATE);
+        
+        mSensor1 = new BioSensor("ECG", 1, 1);
+        mSensor2 = new BioSensor("EMG", 1, 2);
     }
     
     private ServiceConnection mConnection  = new ServiceConnection() {
@@ -53,10 +68,10 @@ public class MainActivity extends Activity {
 			Log.d(TAG, "Service is connected");
 			
 			if(mSensorManager != null && mBound) {
-				mSensorManager.initialise("00:07:80:6D:4C:F2", BioSensorManagerService.BLUETOOTH);
-				mSensorManager.registerListener(mySensorListener, mSensor1, 10000);
+//				mSensorManager.initialise("00:07:80:6D:4C:F2", BioSensorManagerService.BLUETOOTH);
+				mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
 				mSensorManager.registerListener(mySensorListener, mSensor2, 20000);
-				mSensorManager.finalise();
+//				mSensorManager.finalise();
 			}
 		}
 		
@@ -66,10 +81,21 @@ public class MainActivity extends Activity {
 		
 		@Override
 		public void onBioSensorChange(BioSensorEvent event) {
-			float value = event.getValue();
-			long time = event.getTimestamp();
-			BioSensor sen = event.getSensor();
+			final float value = event.getValue();
+			final long time = event.getTimestamp();
+			final BioSensor sen = event.getSensor();
 			Log.d(TAG, "value: " + value + ", sensor: " + sen.getName() + ", time: " + time);
+			//data.setText("hello");
+		
+			runOnUiThread(new Runnable() {
+			    public void run() {
+			    	if(sen.getName().equals("ECG")) {
+			    	data1.setText("value: " + value + ", sensor: " + sen.getName() + ", time: " + time);
+			    	} else {
+			    		data2.setText("value: " + value + ", sensor: " + sen.getName() + ", time: " + time);
+			    	}
+			    }
+			});
 			
 		}
 	};
@@ -78,7 +104,7 @@ public class MainActivity extends Activity {
 		super.onStop();
 		
 		Log.d(TAG, "onStop");
-		mSensorManager.unegisterListener(mySensorListener, mSensor2, 20000);
+//		mSensorManager.unegisterListener(mySensorListener, mSensor2, 20000);
 	}
 
     @Override

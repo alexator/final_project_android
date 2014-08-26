@@ -31,6 +31,9 @@
         <service
             android:name=".BioSensorManagerService"
             android:exported="false"/>
+        <service
+            android:name=".ArduinoService"
+            android:exported="false"/>
         
         <receiver android:name="com.geminnu.hexagon.MyReceiver" >
     		<intent-filter>
