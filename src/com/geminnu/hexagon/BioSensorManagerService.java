@@ -2,15 +2,8 @@ package com.geminnu.hexagon;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-
-
-
 import java.util.Timer;
-
-import com.geminnu.hexagon.ArduinoService.ArduinoBinder;
-
+import com.geminnu.hexagon.ArduinoService.ArduinoServiceBinder;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,10 +20,11 @@ public class BioSensorManagerService extends Service {
 //######################################################################################################################
 	
 	private final String TAG = "BioSensorManagerService";
-	private final IBinder mBinder = new LocalBinder();
-	boolean mBound = false;
+	private final IBinder mBinder = new BioSensorServiceBinder();
+	boolean mBoundArduinoService = false;
+	private MessageSender arduinoSender;
 	
-	public class LocalBinder extends Binder {
+	public class BioSensorServiceBinder extends Binder {
 			
 		public BioSensorManagerService getServerInstance() {
 			return BioSensorManagerService.this;
@@ -50,8 +44,29 @@ public class BioSensorManagerService extends Service {
 	}
 	
 	@Override
+	public boolean onUnbind(Intent intent) {
+		 Log.d(TAG, "onUnbind");
+		 if (mBoundArduinoService) {
+            unbindService(mConnectionWithArduinoService);
+            Intent arduinoService = new Intent(this, ArduinoService.class);
+            stopService(arduinoService);
+            mBoundArduinoService = false;
+            mScheduler.cancel();
+	     }
+		return super.onUnbind(intent);
+	}
+	
+	@Override
 	public void onDestroy() {
 	    Log.d(TAG, "onDestroy");
+	    super.onDestroy();
+	    
+	    if (mBoundArduinoService) {
+	    	unbindService(mConnectionWithArduinoService);
+            Intent arduinoService = new Intent(this, ArduinoService.class);
+            stopService(arduinoService);
+            mScheduler.cancel();
+        }
 	}
 	
 	private ServiceConnection mConnectionWithArduinoService  = new ServiceConnection() {
@@ -60,21 +75,21 @@ public class BioSensorManagerService extends Service {
 		public void onServiceDisconnected(ComponentName name) {
 		
 			Log.d(TAG, "Service is disconnected");
-			mBound = false;
+			mBoundArduinoService = false;
 		}
 		
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			
-			ArduinoBinder binder = (ArduinoBinder) service;
+			ArduinoServiceBinder binder = (ArduinoServiceBinder) service;
 			mArduinoService = binder.getServerInstance();
-			mBound = true;
+			mBoundArduinoService = true;
 			Log.d(TAG, "Service is connected");
 				
-			if(mArduinoService != null && mBound) {
-				MessageSender arduinoSender = mArduinoService.getMessageSenderListener();
+			if(mArduinoService != null && mBoundArduinoService) {
+				arduinoSender = mArduinoService.getMessageSenderListener();
 				mArduinoService.sendActionListener(myAction);
-				finalise(arduinoSender);
+				schedule(arduinoSender);
 			}
 		}
 	};
@@ -97,9 +112,10 @@ public class BioSensorManagerService extends Service {
 	public final static int PATIENTPOSITION = 8;
 	
 	private ArduinoService mArduinoService;
-	private Timer mScheduler = new Timer();
+	private Timer mScheduler;
 	
 	ArrayList<BioSensorListenerItem> mRegisterdListeners = new ArrayList<BioSensorListenerItem>();
+	ArrayList<ArduinoTask> mArduinoTasks = new ArrayList<ArduinoTask>();
 	
 	// Register a new BioSensor Listener to communicate with the UI  
 	public void registerListener(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
@@ -114,20 +130,34 @@ public class BioSensorManagerService extends Service {
 			if(sensor.getName().equals(mRegisterdListeners.get(i).getSensor().getName())) { 
 				if(sampleRate == mRegisterdListeners.get(i).getSampleRate()) {
 					mRegisterdListeners.remove(i);
+					mArduinoTasks.get(i).cancel();
+					mArduinoTasks.remove(i);
 					
 				}
 			}
 		}
+		mScheduler.cancel();
 	}
 	
 	// Schedule an ArduinoTask for every registered listener (sensor) 
-	public void finalise(MessageSender sender) {
-
+	public void schedule(MessageSender sender) {
+		mScheduler = new Timer();
 		if(!mRegisterdListeners.isEmpty()) {
 			for(int i = 0; i < mRegisterdListeners.size(); i++) {
-				mScheduler.scheduleAtFixedRate(new ArduinoTask(sender,i), 150 * i, mRegisterdListeners.get(i).getSampleRate());
+				mArduinoTasks.add(new ArduinoTask(sender,i));
 				Log.d(TAG, "rate: " + mRegisterdListeners.get(i).getSampleRate());	
 			}
+			for(int i = 0; i < mArduinoTasks.size(); i++) {
+//				mScheduler.scheduleAtFixedRate(new ArduinoTask(sender,i), 150 * i, mRegisterdListeners.get(i).getSampleRate());
+				mScheduler.scheduleAtFixedRate(mArduinoTasks.get(i), 1000 * i, mRegisterdListeners.get(i).getSampleRate());
+			}
+		}
+	}
+	
+	public void rescedule() {
+		if(mBoundArduinoService) {
+			mScheduler.cancel();
+			schedule(arduinoSender);
 		}
 	}
 	

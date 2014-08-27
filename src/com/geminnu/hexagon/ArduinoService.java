@@ -32,7 +32,7 @@ public class ArduinoService extends Service{
 	
 	private ArduinoReceiver mArduinoReceiver;
 	private ArduinoTransmitter mArduinoTransmitter;
-	private final IBinder mBinder = new ArduinoBinder();
+	private final IBinder mBinder = new ArduinoServiceBinder();
 	
 	@Override
 	public void onCreate() {
@@ -42,7 +42,7 @@ public class ArduinoService extends Service{
 	
 	
 		
-	public class ArduinoBinder extends Binder {
+	public class ArduinoServiceBinder extends Binder {
 			
 		public ArduinoService getServerInstance() {
 			return ArduinoService.this;
@@ -81,7 +81,7 @@ public class ArduinoService extends Service{
 		}
 		
 		
-		return START_REDELIVER_INTENT;
+		return START_STICKY;
 	}
 	
 	private MessageListener myMessage1 = new MessageListener() {
@@ -128,6 +128,9 @@ public class ArduinoService extends Service{
 	public void onDestroy() {
 		// TODO: notify all that the service / socket will close and the connection will be terminated
 		Log.d(TAG, "onDestroy() stage.Service is closing.");
+		myMessageSend = null;
+		mActionListener = null;
+		myMessage1 = null;
 	}
 	
 	protected void initBluetooth() {

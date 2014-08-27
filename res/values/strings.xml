@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Hexagon</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="greeting">Hello Hexagon!</string>
     <string name="action_settings">Settings</string>
-
+	<string name="testbutton1">Test button</string>
 </resources>
