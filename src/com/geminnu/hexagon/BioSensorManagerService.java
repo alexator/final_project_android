@@ -3,7 +3,9 @@ package com.geminnu.hexagon;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
+
 import com.geminnu.hexagon.ArduinoService.ArduinoServiceBinder;
+
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -33,8 +35,11 @@ public class BioSensorManagerService extends Service {
 	
 	@Override
 	public void onCreate() {
-		Intent arduinoService = new Intent(this, ArduinoService.class);
-        bindService(arduinoService, mConnectionWithArduinoService, Context.BIND_AUTO_CREATE);
+		Log.d(TAG, "Hello from onCreate");
+		if(!mBoundArduinoService) {
+			Intent arduinoService = new Intent(this, ArduinoService.class);
+			bindService(arduinoService, mConnectionWithArduinoService, Context.BIND_AUTO_CREATE);
+		}
 	}
 	
 	@Override
@@ -47,11 +52,16 @@ public class BioSensorManagerService extends Service {
 	public boolean onUnbind(Intent intent) {
 		 Log.d(TAG, "onUnbind");
 		 if (mBoundArduinoService) {
-            unbindService(mConnectionWithArduinoService);
-            Intent arduinoService = new Intent(this, ArduinoService.class);
-            stopService(arduinoService);
-            mBoundArduinoService = false;
-            mScheduler.cancel();
+//            unbindService(mConnectionWithArduinoService);
+//            Intent arduinoService = new Intent(this, ArduinoService.class);
+//            stopService(arduinoService);
+//            mBoundArduinoService = false;
+//            mScheduler.cancel();
+//			 for(int i = 0; i < mArduinoTasks.size(); i++) {
+//	            	mArduinoTasks.get(i).cancel();
+//	            	mArduinoTasks.remove(i);
+//	            	mRegisterdListeners.remove(i);
+//	            }
 	     }
 		return super.onUnbind(intent);
 	}
@@ -64,8 +74,14 @@ public class BioSensorManagerService extends Service {
 	    if (mBoundArduinoService) {
 	    	unbindService(mConnectionWithArduinoService);
             Intent arduinoService = new Intent(this, ArduinoService.class);
-            stopService(arduinoService);
+            for(int i = 0; i < mArduinoTasks.size(); i++) {
+            	mArduinoTasks.get(i).cancel();
+            	mArduinoTasks.remove(i);
+            	mRegisterdListeners.remove(i);
+            }
             mScheduler.cancel();
+            myAction = null;
+            stopService(arduinoService);
         }
 	}
 	

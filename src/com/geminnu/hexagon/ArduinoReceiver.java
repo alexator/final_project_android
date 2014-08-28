@@ -22,7 +22,7 @@ public class ArduinoReceiver extends Thread{
     }
 
     public void run() {
-    	
+    	if(mSocket != null){
     	try {
             tmpIn = mSocket.getInputStream();
             mInStream = tmpIn;
@@ -57,6 +57,7 @@ public class ArduinoReceiver extends Thread{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	}
     }
 
 }

@@ -58,7 +58,7 @@ public class ArduinoService extends Service{
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		//	TODO: start an inputstream based on the socket
-		
+		Log.d(TAG, "onStartCommand");
 		mTypeOfConnection = intent.getIntExtra(COMMUNICATION_TYPE, BLUETOOTH);
 		mDataContainer = intent.getIntExtra(DATA_CONTAINER, XML);
 		mAddress = intent.getStringExtra(ADDRESS);
@@ -81,7 +81,18 @@ public class ArduinoService extends Service{
 		}
 		
 		
-		return START_STICKY;
+		return START_REDELIVER_INTENT;
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO: notify all that the service / socket will close and the connection will be terminated
+		Log.d(TAG, "onDestroy() stage.Service is closing.");
+		myMessageSend = null;
+		mArduinoReceiver.interrupt();
+		mArduinoTransmitter.interrupt();
+		mActionListener = null;
+		myMessage1 = null;
 	}
 	
 	private MessageListener myMessage1 = new MessageListener() {
@@ -91,16 +102,18 @@ public class ArduinoService extends Service{
 			// TODO Auto-generated method stub
 			Log.d(TAG, "hello from receiver");
 //			Log.d(TAG, "type: " + data.getMsgType() + " value: " + data.getValue());
-			Coordinator coo = new Coordinator(mDataContainer, data);
-			if(coo.decision() == SENSOR) {
-				Log.d(TAG, "hello from receiver2");
-				Log.d(TAG, coo.getArduinoMessage().getSensor());
-				mActionListener.onNewAction(coo.getArduinoMessage());
-				Log.d(TAG, "hello from receiver3");
-			}else if(coo.decision() == STATUS) {
-				//	TODO: implement for status manager
-			}
+			if(data != null) {
+				Coordinator coo = new Coordinator(mDataContainer, data);
+				if(coo.decision() == SENSOR) {
+					Log.d(TAG, "hello from receiver2");
+					Log.d(TAG, coo.getArduinoMessage().getSensor());
+					mActionListener.onNewAction(coo.getArduinoMessage());
+					Log.d(TAG, "hello from receiver3");
+				}else if(coo.decision() == STATUS) {
+					//	TODO: implement for status manager
+				}
 			
+			}
 		}
 	};
 	
@@ -114,9 +127,10 @@ public class ArduinoService extends Service{
 		public void onDataSend(String message) {
 			// TODO Auto-generated method stub
 			Log.d(TAG, "hello from sender");
-			mArduinoTransmitter = new ArduinoTransmitter(message, mSocket);
-			mArduinoTransmitter.start();
-			
+			if(message != null) {
+				mArduinoTransmitter = new ArduinoTransmitter(message, mSocket);
+				mArduinoTransmitter.start();
+			}
 		}
 	};
 	
@@ -124,14 +138,6 @@ public class ArduinoService extends Service{
 		this.mActionListener = actionListener;
 	}
 	
-	@Override
-	public void onDestroy() {
-		// TODO: notify all that the service / socket will close and the connection will be terminated
-		Log.d(TAG, "onDestroy() stage.Service is closing.");
-		myMessageSend = null;
-		mActionListener = null;
-		myMessage1 = null;
-	}
 	
 	protected void initBluetooth() {
 		mBluetooth = new Bluetooth(mAddress); 

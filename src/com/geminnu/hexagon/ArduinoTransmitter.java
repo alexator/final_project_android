@@ -24,23 +24,24 @@ public class ArduinoTransmitter extends Thread{
 	public void run() {
 		
 		msgBuffer = mMessage.getBytes();
-        
-        try {
-            tmpOut = mSocket.getOutputStream();
-            mmOutStream = tmpOut;
-        } catch (IOException e) {
-            Log.d(TAG, "temp sockets not created");
-            
-            try {
-				mSocket.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-            
+        if(mSocket != null && !Thread.interrupted()) {
+	        try {
+	            tmpOut = mSocket.getOutputStream();
+	            mmOutStream = tmpOut;
+	        } catch (IOException e) {
+	            Log.d(TAG, "temp sockets not created");
+	            
+	            try {
+					mSocket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	            
+	        }
+			
+	        write(msgBuffer);
         }
-		
-        write(msgBuffer);
 	}
 	
     /**

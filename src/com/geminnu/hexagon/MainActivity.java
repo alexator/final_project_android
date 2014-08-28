@@ -1,7 +1,10 @@
 package com.geminnu.hexagon;
 
 import com.geminnu.hexagon.BioSensorManagerService.BioSensorServiceBinder;
+
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -40,15 +43,23 @@ public class MainActivity extends Activity {
         data2 = (TextView) findViewById(R.id.messages2);
         test = (Button)	findViewById(R.id.tester);
         
-        Intent arduino = new Intent(this, ArduinoService.class);
-        arduino.putExtra(ArduinoService.ADDRESS, "00:07:80:6D:4C:F2");
-        arduino.putExtra(ArduinoService.COMMUNICATION_TYPE, ArduinoService.BLUETOOTH);
-        arduino.putExtra(ArduinoService.DATA_CONTAINER, ArduinoService.XML);
-        startService(arduino);
-        
-//        Intent sensorService = new Intent(this, BioSensorManagerService.class);
-//        startService(sensorService);
-//        bindService(sensorService, mConnectionBioSensorManager, Context.BIND_AUTO_CREATE);
+        Log.d(TAG, "Hello One");
+        if(!isMyServiceRunning(ArduinoService.class)) {
+        	Log.d(TAG, "Hello One");
+	        Intent arduino = new Intent(this, ArduinoService.class);
+	        arduino.putExtra(ArduinoService.ADDRESS, "00:07:80:6D:4C:F2");
+	        arduino.putExtra(ArduinoService.COMMUNICATION_TYPE, ArduinoService.BLUETOOTH);
+//	        arduino.putExtra(ArduinoService.DATA_CONTAINER, ArduinoService.XML);
+	        arduino.putExtra(ArduinoService.DATA_CONTAINER, ArduinoService.JSON);
+	        startService(arduino);
+        }
+        Log.d(TAG, "Hello One");
+        if(!isMyServiceRunning(BioSensorManagerService.class)) {
+        	Log.d(TAG, "Hello Two");
+	        Intent sensorService = new Intent(this, BioSensorManagerService.class);
+	        startService(sensorService);
+	        bindService(sensorService, mConnectionBioSensorManager, Context.BIND_AUTO_CREATE);
+        }
         
         mSensor1 = new BioSensor("ECG", 1, 1);
         mSensor2 = new BioSensor("EMG", 1, 2);
@@ -60,14 +71,6 @@ public class MainActivity extends Activity {
 	public void onRestart() {
 		super.onRestart();
 		Log.d(TAG, "onRestart");
-		
-		if (mBoundBioSensorManager) {
-			Log.d(TAG, "onRestart2");
-			mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
-			mSensorManager.registerListener(mySensorListener, mSensor2, 20000);
-			mSensorManager.rescedule();
-			Log.d(TAG, "onRestart3");
-        }
 	}
 	
 	@Override
@@ -75,11 +78,21 @@ public class MainActivity extends Activity {
 		super.onStart();
 		Log.d(TAG, "onStart");
 		
-		if (!mBoundBioSensorManager) {
+		if (!mBoundBioSensorManager && isMyServiceRunning(BioSensorManagerService.class)) {
 			Log.d(TAG, "onStart2");
+			Log.d(TAG, "Im in onStartBioSen");
 			Intent sensorService = new Intent(this, BioSensorManagerService.class);
 	        bindService(sensorService, mConnectionBioSensorManager, Context.BIND_AUTO_CREATE);
 	        Log.d(TAG, "onStar3");
+        }
+		
+		if(!isMyServiceRunning(ArduinoService.class)) {
+			Log.d(TAG, "Im in onStartArdSer");
+	        Intent arduino = new Intent(this, ArduinoService.class);
+	        arduino.putExtra(ArduinoService.ADDRESS, "00:07:80:6D:4C:F2");
+	        arduino.putExtra(ArduinoService.COMMUNICATION_TYPE, ArduinoService.BLUETOOTH);
+	        arduino.putExtra(ArduinoService.DATA_CONTAINER, ArduinoService.XML);
+	        startService(arduino);
         }
 	}
     
@@ -87,6 +100,14 @@ public class MainActivity extends Activity {
 	public void onResume() {
 		Log.d(TAG, "onResume");
 		super.onResume();
+		if (mBoundBioSensorManager && isMyServiceRunning(BioSensorManagerService.class)) {
+			Log.d(TAG, "onResume2");
+			mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
+			mSensorManager.registerListener(mySensorListener, mSensor2, 20000);
+			mSensorManager.rescedule();
+			Log.d(TAG, "onResume3");
+        }
+		Log.d(TAG, "onResum4");
 	}
 	
 	@Override
@@ -101,7 +122,7 @@ public class MainActivity extends Activity {
 		
 		Log.d(TAG, "onStop");
 		
-		if (mBoundBioSensorManager) {
+		if (mBoundBioSensorManager && isMyServiceRunning(BioSensorManagerService.class)) {
 			mSensorManager.unegisterListener(mySensorListener, mSensor2, 20000);
 			mSensorManager.unegisterListener(mySensorListener, mSensor1, 5000);
         }
@@ -111,11 +132,27 @@ public class MainActivity extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
-		Intent arduino = new Intent(this, ArduinoService.class);
-		Intent sensorService = new Intent(this, BioSensorManagerService.class);
-		unbindService(mConnectionBioSensorManager);
-		stopService(sensorService);
-		stopService(arduino);
+		if(isFinishing()) {
+			if(isMyServiceRunning(BioSensorManagerService.class)) {
+				unbindService(mConnectionBioSensorManager);
+				mConnectionBioSensorManager = null;
+			}
+			
+			if(isMyServiceRunning(ArduinoService.class)) {
+				Intent arduino = new Intent(this, ArduinoService.class);
+				Intent sensorService = new Intent(this, BioSensorManagerService.class);
+				stopService(arduino);
+				stopService(sensorService);
+			}
+		}
+//		mConnectionBioSensorManager = null;
+		if(isMyServiceRunning(BioSensorManagerService.class)) {
+			unbindService(mConnectionBioSensorManager);
+			mConnectionBioSensorManager = null;
+			mSensorManager = null;
+		}
+//		mConnectionBioSensorManager = null;
+//		mSensorManager = null;
 	}
 	
 //################################################################################################################
@@ -131,6 +168,7 @@ public class MainActivity extends Activity {
 		public void onServiceDisconnected(ComponentName name) {
 			Log.d(TAG, "Service is disconnected");
 			mBoundBioSensorManager = false;
+			mSensorManager = null;
 		}
 		
 		@Override
@@ -142,8 +180,11 @@ public class MainActivity extends Activity {
 			Log.d(TAG, "Service is connected");
 			
 			if(mSensorManager != null && mBoundBioSensorManager) {
+				Log.d(TAG, "Service is connected2");
 				mSensorManager.registerListener(mySensorListener, mSensor1, 5000);
 				mSensorManager.registerListener(mySensorListener, mSensor2, 20000);
+				mSensorManager.rescedule();
+				Log.d(TAG, "Service is connected2");
 			}
 		}
 		
@@ -206,5 +247,20 @@ public class MainActivity extends Activity {
     }
     
 //################################################################################################################    
+    
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+    	return(mConnectionBioSensorManager);
+    }
 
 }

@@ -20,7 +20,7 @@ public class Coordinator {
 		if(mParsingMethod == ArduinoService.XML) {
 			ap = new ArduinoParser(mData);
 			try {
-				am = ap.ReadData();
+				am = ap.ReadDataXML();
 			} catch (XmlPullParserException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -34,16 +34,10 @@ public class Coordinator {
 				return ArduinoService.STATUS; 
 			}
 		} else if(mParsingMethod == ArduinoService.JSON) {
-//			ap = new ArduinoParser(mData);
-			try {
-				am = ap.ReadData();
-			} catch (XmlPullParserException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			ap = new ArduinoParser(mData);
+		
+				am = ap.ReadDataJSON();
+			
 			if(am.getMsgType().equals("sensor_data")){
 				return ArduinoService.SENSOR;
 			} else {

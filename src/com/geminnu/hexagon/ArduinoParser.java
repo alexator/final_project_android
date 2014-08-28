@@ -3,6 +3,9 @@ package com.geminnu.hexagon;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -15,7 +18,7 @@ public class ArduinoParser	{
 		this.mMessage = message;
 	}
 	
-	public ArduinoMessage ReadData() throws XmlPullParserException, IOException	{
+	public ArduinoMessage ReadDataXML() throws XmlPullParserException, IOException	{
 		
 		XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -79,5 +82,35 @@ public class ArduinoParser	{
 	    }
 		
 	    return result;
+	}
+	
+	public ArduinoMessage ReadDataJSON() {
+		
+		String message_type = null;
+        String sensor = null;
+        String value = null;
+        float valueFromString = 0;
+       if(mMessage != null) {
+        try {
+			JSONObject jsonObj = new JSONObject(mMessage);
+			JSONArray data = jsonObj.getJSONArray("data");
+			
+			for(int i = 0; i < data.length(); i++) {
+				
+				JSONObject d = data.getJSONObject(i);
+				
+				message_type = d.getString("type");
+				sensor = d.getString("sensor");
+				value = d.getString("value");
+				valueFromString = Float.valueOf(value);
+			}
+			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+       }    
+        return new ArduinoMessage(message_type, sensor, valueFromString);
+	
 	}
 }
