@@ -99,8 +99,8 @@ public class ArduinoParser	{
 				
 				JSONObject d = data.getJSONObject(i);
 				
-				message_type = d.getString("type");
-				sensor = d.getString("sensor");
+				message_type = d.getString("message_type");
+				sensor = d.getString("type");
 				value = d.getString("value");
 				valueFromString = Float.valueOf(value);
 			}

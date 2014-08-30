@@ -63,7 +63,8 @@ public class BioSensorManagerService extends Service {
 //	            	mRegisterdListeners.remove(i);
 //	            }
 	     }
-		return super.onUnbind(intent);
+//		return super.onUnbind(intent);
+		 return true;
 	}
 	
 	@Override
@@ -141,7 +142,7 @@ public class BioSensorManagerService extends Service {
 	
 	// Unregister the BioSensor listener
 	public void unegisterListener(BioSensorEventListener listener, BioSensor sensor, int sampleRate) {
-		
+		Log.d(TAG, "unregister");
 		for(int i = 0; i < mRegisterdListeners.size(); i++) {
 			if(sensor.getName().equals(mRegisterdListeners.get(i).getSensor().getName())) { 
 				if(sampleRate == mRegisterdListeners.get(i).getSampleRate()) {
@@ -171,6 +172,7 @@ public class BioSensorManagerService extends Service {
 	}
 	
 	public void rescedule() {
+		Log.d(TAG, "onrescedule");
 		if(mBoundArduinoService) {
 			mScheduler.cancel();
 			schedule(arduinoSender);
