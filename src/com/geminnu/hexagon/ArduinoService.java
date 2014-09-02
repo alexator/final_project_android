@@ -1,5 +1,7 @@
 package com.geminnu.hexagon;
 
+import java.net.Socket;
+
 import android.app.Service;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -23,12 +25,15 @@ public class ArduinoService extends Service{
 	
 	
 	private Bluetooth mBluetooth;
+	private Wifi mWifi;
+	private Socket mWifiSocket;
 	private BluetoothSocket mSocket;
 	private String mAddress;
 	private int mTypeOfConnection;
 	private int mDataContainer;
 	private boolean mSocketSuccess = false;
-	private CoordinatorActionListener mActionListener;
+	private CoordinatorActionListener mActionListenerSensors;
+	private CoordinatorActionListener mActionListenerStatus;	
 	
 	private ArduinoReceiver mArduinoReceiver;
 	private ArduinoTransmitter mArduinoTransmitter;
@@ -36,8 +41,7 @@ public class ArduinoService extends Service{
 	
 	@Override
 	public void onCreate() {
-		//	TODO: init bluetooth or wifi for the creation of the socket.
-		Log.d(TAG, "onCreate() stage");
+		Log.d(TAG, "onCreate()");
 	}
 	
 	
@@ -51,13 +55,12 @@ public class ArduinoService extends Service{
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return mBinder;
 	}
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		//	TODO: start an inputstream based on the socket
+		
 		Log.d(TAG, "onStartCommand");
 		mTypeOfConnection = intent.getIntExtra(COMMUNICATION_TYPE, BLUETOOTH);
 		mDataContainer = intent.getIntExtra(DATA_CONTAINER, XML);
@@ -76,8 +79,18 @@ public class ArduinoService extends Service{
 		}
 		
 		if(mSocketSuccess) {
-			mArduinoReceiver = new ArduinoReceiver(mSocket, myMessage1);
-			mArduinoReceiver.start();
+			switch(mTypeOfConnection) {
+			case BLUETOOTH:
+				mArduinoReceiver = new ArduinoReceiver(mSocket, null, myMessage1);
+				mArduinoReceiver.start();
+				break;
+			case WIFI:
+				mArduinoReceiver = new ArduinoReceiver(null, mWifiSocket, myMessage1);
+				mArduinoReceiver.start();
+				break;
+			}
+//			mArduinoReceiver = new ArduinoReceiver(mSocket, myMessage1);
+//			mArduinoReceiver.start();
 		}
 		
 		
@@ -87,11 +100,12 @@ public class ArduinoService extends Service{
 	@Override
 	public void onDestroy() {
 		// TODO: notify all that the service / socket will close and the connection will be terminated
-		Log.d(TAG, "onDestroy() stage.Service is closing.");
+		Log.d(TAG, "onDestroy()");
 		myMessageSend = null;
 		mArduinoReceiver.interrupt();
 		mArduinoTransmitter.interrupt();
-		mActionListener = null;
+		mActionListenerSensors = null;
+		mActionListenerStatus = null;
 		myMessage1 = null;
 	}
 	
@@ -99,20 +113,39 @@ public class ArduinoService extends Service{
 		
 		@Override
 		public void onDataReceived(String data) {
-			// TODO Auto-generated method stub
+			
 			Log.d(TAG, "hello from receiver");
 //			Log.d(TAG, "type: " + data.getMsgType() + " value: " + data.getValue());
-			if(data != null) {
+			if(data != null && !data.equals("problem")) {
 				Coordinator coo = new Coordinator(mDataContainer, data);
 				if(coo.decision() == SENSOR) {
 					Log.d(TAG, "hello from receiver2");
-					Log.d(TAG, coo.getArduinoMessage().getSensor());
-					mActionListener.onNewAction(coo.getArduinoMessage());
+					mActionListenerSensors.onNewAction(coo.getArduinoMessage());
 					Log.d(TAG, "hello from receiver3");
 				}else if(coo.decision() == STATUS) {
-					//	TODO: implement for status manager
+					Log.d(TAG, "hello from receiver4");
+					if(coo.getArduinoMessage().getType() == 11 && coo.getArduinoMessage().getValue() == 1.0) {
+						mActionListenerStatus.onNewAction(new ArduinoMessage(111, 111, 0));
+						mActionListenerSensors.onNewAction(new ArduinoMessage(111, 111, 0));
+					} else {
+						mActionListenerStatus.onNewAction(coo.getArduinoMessage());
+					}
+					Log.d(TAG, "hello from receiver5");
 				}
 			
+			} else if(data.equals("problem")) {
+				mArduinoReceiver.interrupt();
+				if(mArduinoTransmitter != null){
+					mArduinoTransmitter.interrupt();
+				}
+				while(mActionListenerSensors == null && mActionListenerStatus == null) {
+//					Log.d(TAG, "it's a trap");
+				}
+				if(mActionListenerSensors !=null && mActionListenerStatus != null){
+				mActionListenerSensors.onNewAction(new ArduinoMessage(111, 111, 0));
+				mActionListenerStatus.onNewAction(new ArduinoMessage(111, 111, 0));
+				stopSelf();
+				}
 			}
 		}
 	};
@@ -128,17 +161,33 @@ public class ArduinoService extends Service{
 			// TODO Auto-generated method stub
 			Log.d(TAG, "hello from sender");
 			if(message != null) {
-				mArduinoTransmitter = new ArduinoTransmitter(message, mSocket);
-				mArduinoTransmitter.start();
+				switch(mTypeOfConnection) {
+				case BLUETOOTH:
+					mArduinoTransmitter = new ArduinoTransmitter(message, mSocket, null);
+					mArduinoTransmitter.start();
+					break;
+				case WIFI:
+					mArduinoTransmitter = new ArduinoTransmitter(message, null, mWifiSocket);
+					mArduinoTransmitter.start();
+					break;
+				}
+				
+//				mArduinoTransmitter = new ArduinoTransmitter(message, mSocket);
+//				mArduinoTransmitter.start();
 			}
 		}
 	};
 	
-	public void sendActionListener(CoordinatorActionListener actionListener) {
-		this.mActionListener = actionListener;
+	public void sendActionListenerForSensors(CoordinatorActionListener actionListener) {
+		this.mActionListenerSensors = actionListener;
+	}
+	public void sendActionListenerForStatus(CoordinatorActionListener actionListener) {
+		this.mActionListenerStatus = actionListener;
 	}
 	
-	
+	public int getContainer() {
+		return mDataContainer;
+	}
 	protected void initBluetooth() {
 		mBluetooth = new Bluetooth(mAddress); 
 		mSocket = mBluetooth.createBlueSocket();
@@ -146,7 +195,8 @@ public class ArduinoService extends Service{
 	}
 	
 	protected void initWifi() {
-		//	TODO: Implement wifi
+		mWifi = new Wifi(mAddress);
+		mWifiSocket = mWifi.createWifiSocket();
 		mSocketSuccess = true;
 	}
 }

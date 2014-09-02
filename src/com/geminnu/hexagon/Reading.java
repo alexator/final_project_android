@@ -2,44 +2,70 @@ package com.geminnu.hexagon;
 
 public class Reading {
 	
-	private long id;
-	private float value;
-	private long type;
-	private long user_id;
+	private int id;
+	private double value;
+	private int type;
+	private int user_id;
 	private String time;
 	private String status;
 	
-
-	public long getId() {
+	public Reading(int id_prime, double value, int type, int userId, String stamp, String stat) {
+		this.id = id_prime;
+		this.value = value;
+		this.type = type;
+		this.user_id = userId;
+		this.time = stamp;
+		this.status = stat;
+	}
+	public Reading(double value, int type, int userId, String stat) {
+		this.value = value;
+		this.type = type;
+		this.user_id = userId;
+		this.status = stat;
+	}
+	
+	public Reading() {
+		
+	}
+	
+	public int getId() {
 		return id;
 	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
 
-	public float getValue() {
+	public double getValue() {
 		return value;
 	}
 
-	public void setValue(float value) {
+	public void setValue(double value) {
 		this.value = value;
 	}
 	
-	public long getType() {
+	public int getType() {
 		return type;
 	}
 	
-	public void setType(long type) {
+	public void setType(int type) {
 		this.type = type;
 	}
 	
-	public long getUserId() {
+	public int getUserId() {
 		return user_id;
 	}
 	
-	public void setUserId(long u_id) {
+	public void setUserId(int u_id) {
 		this.user_id = u_id;
 	}
 	
 	public String getTime() {
 		return time;
+	}
+	
+	public void setTime(String time) {
+		this.time = time;
 	}
 	
 	public String getStatus() {

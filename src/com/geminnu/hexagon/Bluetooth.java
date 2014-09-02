@@ -10,7 +10,7 @@ import android.util.Log;
 
 public class Bluetooth {
 	
-	private String TAG = "Hexagon";
+	private String TAG = "Bluetooth";
 	private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	private String arduinoMacAdrr;
     private BluetoothSocket btSocket = null;

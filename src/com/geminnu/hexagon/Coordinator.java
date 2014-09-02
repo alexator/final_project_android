@@ -10,6 +10,9 @@ public class Coordinator {
 	private String mData;
 	private ArduinoMessage am;
 	private ArduinoParser ap;
+	private final int SENSORDATA = 0;
+	private final int STATUSDATA = 1;
+	
 	
 	public Coordinator(int parsingMethod, String data) {
 		this.mParsingMethod = parsingMethod;
@@ -28,19 +31,19 @@ public class Coordinator {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(am.getMsgType().equals("sensor_data")){
+			if(am.getMsgType() == SENSORDATA){
 				return ArduinoService.SENSOR;
-			} else {
+			} else if(am.getMsgType() == STATUSDATA) {
 				return ArduinoService.STATUS; 
 			}
 		} else if(mParsingMethod == ArduinoService.JSON) {
 			ap = new ArduinoParser(mData);
 		
-				am = ap.ReadDataJSON();
-			
-			if(am.getMsgType().equals("sensor_data")){
+			am = ap.ReadDataJSON();
+		
+			if(am.getMsgType() == SENSORDATA){
 				return ArduinoService.SENSOR;
-			} else {
+			} else if(am.getMsgType() == STATUSDATA) {
 				return ArduinoService.STATUS; 
 			}
 		}

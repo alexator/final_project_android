@@ -29,7 +29,9 @@ public class ArduinoParser	{
         
         
         String message_type = null;
-        String sensor = null;
+        int message_typeFromString = 0;
+        String type = null;
+        int typeFromString = 0;
         String value = null;
         float valueFromString = 0;
         
@@ -41,8 +43,10 @@ public class ArduinoParser	{
     			
     			if (name.equals("message_type")) {
     				message_type = ReadMessageType(xpp, eventType);
+    				message_typeFromString = Integer.valueOf(message_type);
     			} else if (name.equals("type")) {
-    				sensor = ReadSensorType(xpp, eventType);
+    				type = ReadSensorType(xpp, eventType);
+    				typeFromString = Integer.valueOf(type);
     			} else if (name.equals("value")) {
     				value = ReadValue(xpp, eventType);
     				valueFromString = Float.valueOf(value);
@@ -56,7 +60,7 @@ public class ArduinoParser	{
            }
         
         
-        return new ArduinoMessage(message_type, sensor, valueFromString);
+        return new ArduinoMessage(message_typeFromString, typeFromString, valueFromString);
         
 	}
 	private String ReadMessageType(XmlPullParser parser, int eventType) throws XmlPullParserException, IOException {
@@ -86,10 +90,14 @@ public class ArduinoParser	{
 	
 	public ArduinoMessage ReadDataJSON() {
 		
-		String message_type = null;
-        String sensor = null;
+        
+        String message_type = null;
+        int message_typeFromString = 0;
+        String type = null;
+        int typeFromString = 0;
         String value = null;
         float valueFromString = 0;
+        
        if(mMessage != null) {
         try {
 			JSONObject jsonObj = new JSONObject(mMessage);
@@ -100,7 +108,9 @@ public class ArduinoParser	{
 				JSONObject d = data.getJSONObject(i);
 				
 				message_type = d.getString("message_type");
-				sensor = d.getString("type");
+				message_typeFromString = Integer.valueOf(message_type);
+				type = d.getString("type");
+				typeFromString = Integer.valueOf(type);
 				value = d.getString("value");
 				valueFromString = Float.valueOf(value);
 			}
@@ -110,7 +120,7 @@ public class ArduinoParser	{
 			e.printStackTrace();
 		}
        }    
-        return new ArduinoMessage(message_type, sensor, valueFromString);
+       return new ArduinoMessage(message_typeFromString, typeFromString, valueFromString);
 	
 	}
 }

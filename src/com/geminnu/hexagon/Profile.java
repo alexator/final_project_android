@@ -2,16 +2,31 @@ package com.geminnu.hexagon;
 
 public class Profile {
 	
-	private long id;
+	private int id;
 	private String first_name;
 	private String last_name;
 	private String sex;
-	private long age;
-	private long user_id;
+	private int age;
+	private int user_id;
 	
+	public Profile(int id_prime, String first, String last, String sex, int age, int id) {
+		this.id = id_prime;
+		this.first_name = first;
+		this.last_name = last;
+		this.sex = sex;
+		this.age = age;
+		this.user_id = id;
+	}
 	
+	public Profile(String first, String last, String sex, int age, int id) {
+		this.first_name = first;
+		this.last_name = last;
+		this.sex = sex;
+		this.age = age;
+		this.user_id = id;
+	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
@@ -39,19 +54,19 @@ public class Profile {
 		this.sex = sex;
 	}
 	
-	public long getAge() {
+	public int getAge() {
 		return age;
 	}
 	
-	public void setAge(long age) {
+	public void setAge(int age) {
 		this.age = age;
 	}
 	
-	public long getUserId() {
+	public int getUserId() {
 		return user_id;
 	}
 	
-	public void setUserId(long u_id) {
+	public void setUserId(int u_id) {
 		this.user_id = u_id;
 	}
 }

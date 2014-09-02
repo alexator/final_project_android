@@ -2,23 +2,23 @@ package com.geminnu.hexagon;
 
 public class ArduinoMessage {
 
-	private String mMsgType;
-	private String mSensor;
+	private int mMsgType;
+	private int mType;
 	private float mValue;
 	
-	public ArduinoMessage (String msg_type, String sensor, float value) {
+	public ArduinoMessage (int msg_type, int type, float value) {
 		
 		this.mMsgType = msg_type;
-		this.mSensor = sensor;
+		this.mType = type;
 		this.mValue = value;
 	}
 
-	public String getMsgType() {
+	public int getMsgType() {
 		return mMsgType;
 	}
 
-	public String getSensor() {
-		return mSensor;
+	public int getType() {
+		return mType;
 	}
 
 	public float getValue() {
